@@ -52,6 +52,8 @@ public class ClientA2 extends JFrame {
     inputAccount.setText("1001");
     inputAccount.addActionListener(new Listener());
     
+    //both fields can be handled by the same action listener
+    
     JPanel inputsWest = new JPanel(new BorderLayout());
     inputsWest.add(new JLabel("Enter radius"), BorderLayout.WEST);
     inputsWest.add(inputRadius, BorderLayout.CENTER);
@@ -74,7 +76,7 @@ public class ClientA2 extends JFrame {
     add(new JScrollPane(logTextArea), BorderLayout.CENTER);
 
     setTitle("Area calculator client");
-    setSize(700, 700);
+    setSize(600, 700);
     
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setVisible(true);      
@@ -159,6 +161,7 @@ public class ClientA2 extends JFrame {
 
           // Display to the text area
           logTextArea.append("Radius is " + radius + "\n");
+          logTextArea.append("Sending request to server IP " + connection.getInetAddress().getHostAddress() + "\n");
           logTextArea.append("Area received from the server is " + area + '\n');
         }
       } catch (IOException ex) {

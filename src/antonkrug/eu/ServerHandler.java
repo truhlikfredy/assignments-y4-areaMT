@@ -72,6 +72,7 @@ public class ServerHandler extends Thread {
         double input  = Double.parseDouble(consumer.readLine());
         double result = calculatePi(input);
             
+        server.messageFromThread(this,"Request from IP: " + client.getInetAddress().getHostAddress());
         server.messageFromThread(this, Messages.getString("HANDLER_RADIUS") + " " + input
             + " " + Messages.getString("HANDLER_RESULT") + result);
         
