@@ -7,6 +7,13 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+/**
+ * Simple GUI client
+ * 
+ * @author Anton Krug
+ * @date 01.11.2016
+ * @version 1
+ */
 public class ClientA2 extends JFrame {
   
   private static final long             serialVersionUID = 6743513674592292079L;
