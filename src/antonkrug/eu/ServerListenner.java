@@ -37,10 +37,17 @@ public class ServerListenner {
     this.db            = new DatabaseHandler();
     
     final Pair<Boolean, String> ret = db.connect();
-    if (ret.getFirst()==false) {
+    
+    if (ret.getFirst()) {
+      //confirm connection to DB
+      guiMessage(ret.getSecond());      
+    } 
+    else {
+      //stop running if can't connect to DB
       guiMessage(ret.getSecond());
       keepRunning = false;
     }
+    
   }
 
 

@@ -1,8 +1,9 @@
 package antonkrug.eu;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -22,8 +23,8 @@ public class ServerHandler extends Thread {
   private              Socket           client         = null;
   private              ServerListenner  server         = null;
   private              boolean          keepConnected  = true;
-  private              DataInputStream  consumer       = null; 
-  private              DataOutputStream producer       = null;
+  private              BufferedReader   consumer       = null; 
+  private              PrintWriter      producer       = null;
 
 
   public ServerHandler(ServerListenner server, Socket client) {
@@ -68,13 +69,13 @@ public class ServerHandler extends Thread {
    
     while (keepConnected) {
       try {
-        double input  = consumer.readDouble();
+        double input  = Double.parseDouble(consumer.readLine());
         double result = calculatePi(input);
             
         server.messageFromThread(this, Messages.getString("HANDLER_RADIUS") + " " + input
             + " " + Messages.getString("HANDLER_RESULT") + result);
         
-        producer.writeDouble(result);
+        producer.println(result);
       }
       catch (IOException e) {
         server.messageFromThread(this, Messages.getString("ERROR_REQUEST") );
@@ -87,15 +88,21 @@ public class ServerHandler extends Thread {
   
   private boolean validatedUser() {
     try {
-      final Integer               account = consumer.readInt();
+      final Integer               account = Integer.parseInt(consumer.readLine());      
       final Pair<Boolean, String> result  = server.logIn(account);
+      server.messageFromThread(this, "Authetication with account number:" + account);
       
       if (result.getFirst()) {
-        producer.writeUTF("Welcome "+result.getSecond());
-        producer.flush();
+        server.messageFromThread(this, "Authetication correct:" + result.getSecond());        
+        producer.println("Welcome "+result.getSecond());
+        return true;        
+      }
+      else {
+        server.messageFromThread(this, "Authetication failed!");        
+        producer.println("Failed to authenticate");
+        return false;
       }
            
-      return true;        
     }
     catch (IOException e) {
       server.messageFromThread(this, Messages.getString("ERROR_VALIDATED") );
@@ -108,13 +115,13 @@ public class ServerHandler extends Thread {
 
   public void run() {
     try {
-      consumer =  new DataInputStream(client.getInputStream());
-      producer =  new DataOutputStream(client.getOutputStream());
+      consumer = new BufferedReader(new InputStreamReader(client.getInputStream()));
+      producer = new PrintWriter(client.getOutputStream(), true);
       
       if (validatedUser()) {
         calculatePiRequests();
       }
-
+      
       client.close();
     }
     catch (Exception e) {

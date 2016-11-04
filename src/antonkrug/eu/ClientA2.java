@@ -8,15 +8,14 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class ClientA2 extends JFrame {
-  private static final long serialVersionUID = 6743513674592292079L;
-
-  private JTextField       inputRadius;
-  private JTextField       inputAccount;
-  private JTextArea        logTextArea;
-  private DataInputStream  consumer;
-  private DataOutputStream producer;
   
-  private Socket connection = null;
+  private static final long             serialVersionUID = 6743513674592292079L;
+  private              Socket           connection       = null;
+  private              BufferedReader   consumer         = null; 
+  private              PrintWriter      producer         = null;
+  private              JTextField       inputRadius;
+  private              JTextField       inputAccount;
+  private              JTextArea        logTextArea;
 
 
   public static void main(String[] args) {
@@ -73,31 +72,49 @@ public class ClientA2 extends JFrame {
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setVisible(true);      
   }
+
+  
+  private void authenticateAccount() {
+    Integer account = 0;
+
+    //will validate first if the account is not text
+    try {
+      account = Integer.parseInt(inputAccount.getText().trim());
+    }
+    catch (NumberFormatException ex) {
+      logTextArea.append(Messages.getString("ERROR_NUMBER") + "\n");
+    }
+    
+    producer.println(account);
+    
+    String ret = "Failed";
+    
+    try {
+      ret = consumer.readLine();
+    } catch (IOException ex) {
+      logTextArea.append(ex.toString() + '\n');
+    }
+    
+    logTextArea.append(ret + "\n");
+    
+    // If we are not Welcome then don't even try connecting to it because in
+    // meantime server is closing the connection anyway
+    if (!ret.startsWith("Welcome")) {
+      connection = null;
+    }    
+  }
   
   
   public void connect(int port) {
     try {
       connection = new Socket("localhost", port);
 
-      //setup streams
-      consumer = new DataInputStream(connection.getInputStream());
-      producer = new DataOutputStream(connection.getOutputStream());
-      
-      Integer account = 0;
-      //will validate first if the account is not text
-      try {
-        account = Integer.parseInt(inputRadius.getText().trim());
-      }
-      catch (NumberFormatException ex) {
-        logTextArea.append(Messages.getString("ERROR_NUMBER") + "\n");
-      }
-      
-      producer.writeInt(account);
-      producer.flush();
-      
-      @SuppressWarnings("deprecation")
-      String ret=consumer.readLine();
-      logTextArea.append(ret + "\n");
+      //setup consumer and producer streams
+      consumer = new BufferedReader(new InputStreamReader( connection.getInputStream()));
+      producer = new PrintWriter(connection.getOutputStream(), true);
+            
+      //authenticate the account first
+      authenticateAccount();
       
     } catch (IOException ex) {
       logTextArea.append(Messages.getString("CLIENT_CANT_CONNECT")+" "+ port+"\n");
@@ -128,11 +145,10 @@ public class ClientA2 extends JFrame {
       try {
         if (connection != null) {
           // Send the radius to the server
-          producer.writeDouble(radius);
-          producer.flush();
+          producer.println(radius);
 
           // Get result from the server
-          final double area = consumer.readDouble();
+          final double area = Double.parseDouble(consumer.readLine());
 
           // Display to the text area
           logTextArea.append("Radius is " + radius + "\n");
