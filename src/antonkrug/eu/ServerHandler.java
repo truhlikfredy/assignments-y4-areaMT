@@ -1,11 +1,8 @@
 package antonkrug.eu;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -16,7 +13,7 @@ import java.net.Socket;
  * @date 01.11.2016
  * @version 1
  */
-class ServerHandler extends Thread {
+public class ServerHandler extends Thread {
 
   //multiply by 1000, round to whole number and then divide 1000 to get 3 decimal places.
   //Keep as floating number so it will not get truncated. Set 0 to disable rounding
@@ -24,6 +21,7 @@ class ServerHandler extends Thread {
   private static final boolean         DEBUG          = false;
   private              Socket          client         = null;
   private              ServerListenner server         = null;
+  private              boolean         keepConnected  = true;
 
 
   public ServerHandler(ServerListenner server, Socket client) {
@@ -47,19 +45,30 @@ class ServerHandler extends Thread {
     }
   }
   
+  public double calculatePi(double radius) {
+    // Use absolute value on radius, negative radius is just into opposite
+    // direction (could more presentation feature), but the length of the radius
+    // is the same. Negative value could be used to display the line on opposite
+    // size, but still it would be the same radius as positive value.
+    
+    double result = Math.PI * Math.pow( Math.abs(radius), 2);
+    
+    //round to defined decimal places
+    if (DECIMAL_PLACES > 0) {
+      result = Math.round(result * DECIMAL_PLACES) / DECIMAL_PLACES;
+    }
+    
+    return result; 
+  }
   
-  private void calculatePi(DataInputStream consume, DataOutputStream produce) {
+  
+  private void calculatePiRequest(DataInputStream consume, DataOutputStream produce) {
    
-    while (true) {
+    while (keepConnected) {
       try {
         double input  = consume.readDouble();
-        double result = Math.PI * Math.pow(input, 2);
-        
-        //round to defined decimal places
-        if (DECIMAL_PLACES > 0) {
-          result = Math.round(result * DECIMAL_PLACES) / DECIMAL_PLACES;
-        }
-        
+        double result = calculatePi(input);
+            
         server.messageFromThread(this, Messages.getString("HANDLER_RADIUS") + " " + input
             + " " + Messages.getString("HANDLER_RESULT") + result);
         
@@ -68,6 +77,7 @@ class ServerHandler extends Thread {
       catch (IOException e) {
         server.messageFromThread(this, Messages.getString("ERROR_REQUEST") );
         if (DEBUG) e.printStackTrace();
+        keepConnected = false;
       }
     }
       
@@ -82,7 +92,7 @@ class ServerHandler extends Thread {
       consume =  new DataInputStream(client.getInputStream());
       produce =  new DataOutputStream(client.getOutputStream());
 
-      calculatePi(consume, produce);
+      calculatePiRequest(consume, produce);
 
       client.close();
     }

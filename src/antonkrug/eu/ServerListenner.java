@@ -16,7 +16,7 @@ import javax.swing.JTextArea;
  * @date 01.11.2016
  * @version 1
  */
-class ServerListenner {
+public class ServerListenner {
 
   // if set true will output on console more verbose information
   private static final boolean           DEBUG         = false;
