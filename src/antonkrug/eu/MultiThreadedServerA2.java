@@ -55,8 +55,11 @@ public class MultiThreadedServerA2 extends JFrame {
   public void startUpTheApp() {
     serverApp = new ServerListenner(getTextArea());
 
+    @SuppressWarnings("unused")
     int ret = serverApp.listen(Config.getInstance().getInteger("socket_server_port"));
-    System.exit(ret);    
+    
+    //Do not exit right away allowing human to see what happened
+    //System.exit(ret);    
   }
 
 

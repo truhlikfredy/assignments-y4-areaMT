@@ -18,20 +18,21 @@ import java.net.Socket;
  */
 class ServerHandler extends Thread {
 
-  private static final boolean         DEBUG  = false;
-  private              Socket          client = null;
-  private              ServerListenner server = null;
+  //multiply by 1000, round to whole number and then divide 1000 to get 3 decimal places.
+  //Keep as floating number so it will not get truncated. Set 0 to disable rounding
+  private static final double          DECIMAL_PLACES = 1000;
+  private static final boolean         DEBUG          = false;
+  private              Socket          client         = null;
+  private              ServerListenner server         = null;
 
 
   public ServerHandler(ServerListenner server, Socket client) {
     this.client = client;
-    this.server = server;
-    
-    System.out.println("Client connection from " + getHostaddr());
+    this.server = server;    
   }
 
   
-  private String getHostaddr() {
+  public String getHostAddress() {
     return client.getInetAddress().getHostAddress();
   }
   
@@ -53,8 +54,14 @@ class ServerHandler extends Thread {
       try {
         double input  = consume.readDouble();
         double result = Math.PI * Math.pow(input, 2);
-        server.messageFromThread(this, "Requested area for radius " + input
-            + " resulting area is: " + result);      
+        
+        //round to defined decimal places
+        if (DECIMAL_PLACES > 0) {
+          result = Math.round(result * DECIMAL_PLACES) / DECIMAL_PLACES;
+        }
+        
+        server.messageFromThread(this, Messages.getString("HANDLER_RADIUS") + " " + input
+            + " " + Messages.getString("HANDLER_RESULT") + result);
         
         produce.writeDouble(result);
       }
@@ -80,35 +87,15 @@ class ServerHandler extends Thread {
       client.close();
     }
     catch (Exception e) {
-      System.out.println(e);
+      server.messageFromThread(this, Messages.getString("CLIENT_MSG_ERROR") );
+      if (DEBUG) e.printStackTrace();
     }
     
-    System.out.println("Client (" + getHostaddr() + ") connection closed\n");
+    
     server.clientDisconnected(client);
+    server.messageFromThread(this, Messages.getString("CLIENT_DISCONNECTING") + getHostAddress() );
     
   }
-
-//  // Create data input and output streams
-//  DataInputStream inputFromClient = new DataInputStream(
-//    socket.getInputStream());
-//  DataOutputStream outputToClient = new DataOutputStream(
-//    socket.getOutputStream());
-//
-//  while (true) {
-//    // Receive radius from the client
-//    double radius = inputFromClient.readDouble();
-//
-//    // Compute area
-//    double area = radius * radius * Math.PI;
-//
-//    // Send area back to the client
-//    outputToClient.writeDouble(area);
-//
-//    jta.append("Radius received from client: " + radius + '\n');
-//    jta.append("Area found: " + area + '\n');
-//  }
-  
-  
 
 
 }

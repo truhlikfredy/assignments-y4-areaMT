@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `RegisteredApplicants`
 --
 
-CREATE TABLE `registeredapplicants` (
+CREATE TABLE `RegisteredApplicants` (
   `AccountNum` int(4) NOT NULL,
   `FirstName` varchar(20) NOT NULL,
   `LastName` varchar(20) NOT NULL

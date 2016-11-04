@@ -25,6 +25,7 @@ class ServerListenner {
   private HashMap<Socket, ServerHandler> clientSockets = null;
   private JTextArea                      textArea      = null;
   private boolean                        keepRunning   = true;
+  private DatabaseHandler                db            = null;
 
   
   /**
@@ -33,6 +34,13 @@ class ServerListenner {
   public ServerListenner(JTextArea textArea) {
     this.clientSockets = new HashMap<>();
     this.textArea      = textArea;
+    this.db            = new DatabaseHandler();
+    
+    final Pair<Boolean, String> ret = db.connect();
+    if (ret.getFirst()==false) {
+      guiMessage(ret.getSecond());
+      keepRunning = false;
+    }
   }
 
 
@@ -45,6 +53,8 @@ class ServerListenner {
    */
   public synchronized void clientConnected(Socket client, ServerHandler handler) {
     clientSockets.put(client, handler);
+    
+    guiMessage(Messages.getString("CLIENT_CONNECTED") + handler.getHostAddress() );
   }
 
 
@@ -57,6 +67,17 @@ class ServerListenner {
   public synchronized void clientDisconnected(Socket client) {
     if (clientSockets.containsKey(client)) {
       clientSockets.remove(client);
+    }
+  }
+  
+  
+  public synchronized Pair<Boolean, String> logIn(int account) {
+    final String ret = db.getAccountName(account);
+    if (ret == null) {
+      return new Pair<Boolean, String>(false, Messages.getString("ERROR_NOT_ALLOWED"));
+    }
+    else {
+      return new Pair<Boolean, String>(true, ret);
     }
   }
   
@@ -94,13 +115,32 @@ class ServerListenner {
   }
   
   
+  /**
+   * Only server listener can update this logger
+   * @param msg
+   */
   private void guiMessage(String msg) {
-    textArea.append(msg);
+    textArea.append("Server---" + msg + "\n");
+  }
+  
+  /**
+   * Search external strings and print out the value to the gui directly
+   * 
+   * @param key
+   */
+  private void guiMessageFromExternal(String key) {
+    guiMessage(Messages.getString(key));
   }
   
   
+  /**
+   * Threads workers can access the GUI logger
+   * 
+   * @param handler
+   * @param msg
+   */
   protected synchronized void messageFromThread(ServerHandler handler, String msg) {
-    textArea.append(msg);
+    textArea.append(handler.toString() + "---" + msg + "\n");
   }
 
 
@@ -111,18 +151,21 @@ class ServerListenner {
     try {
       server = new ServerSocket(portToListen);
     } catch (IOException e) {
-      guiMessage(Messages.getString("SERVER_START_ERROR"));
+      guiMessageFromExternal("SERVER_START_ERROR");
       if (DEBUG) e.printStackTrace();
 
       return 1;
     }
 
+    guiMessage(Messages.getString("SERVER_STARTED") + new Date());
+    
     while (keepRunning) {
-      guiMessage("Started @ " + new Date() + " and waiting for a clients on port "
-          + portToListen);
+      
+      guiMessage(Messages.getString("SERVER_WAITING") + portToListen);
       
       try {
         client = server.accept();
+        guiMessageFromExternal("CLIENT_CONNECTING");
 
         // Before getting Denial-Of-Service due the server overload and dropping
         // all connections, let's throttle down number of connections possible.
@@ -136,23 +179,25 @@ class ServerListenner {
           handler.start();
 
         }
-        else {
-          System.out.println("Server connection capacity reached.");
+        else {          
+          //reached maximum of clients
+          guiMessageFromExternal("SERVER_CAP");
           client.close();
-          continue;
         }
 
       } catch (Exception e) {
-        System.out.println(Messages.getString("ERROR_ACCEPT"));
+        guiMessageFromExternal("ERROR_ACCEPT");
         if (DEBUG) e.printStackTrace();
       }
 
     }
     
+    guiMessageFromExternal("SERVER_CLOSING");
+    
     try {
       server.close();
     } catch (IOException e) {
-      guiMessage(Messages.getString("SERVER_STOP_ERROR"));
+      guiMessageFromExternal("SERVER_STOP_ERROR");
       if (DEBUG) e.printStackTrace();
     }
     

@@ -8,13 +8,13 @@ Area multi-threaded server - CA 2
 Features
 --------
 
-* Proper use of Java8. Utilization of **streams** together with **lambda expressions** and **method referencing**, to disconnect all clients quickly and cleanly before closing the GUI.
+* Proper use of Java8. Utilization of **streams** together with **lambda expressions** and **method referencing**, to disconnect all clients quickly and cleanly before closing the GUI window.
     `    clientSockets.values().stream().forEach(this::clientDrop); `
 	
 	The following method reference
 	`this::clientDrop` 
-	is same as **lamda** expression below, but cleaner:
-    `(handlerThread) -> clientDrop(handlerThread)` but much cleaner.
+	is same as **lamda** expression below, but much cleaner:
+    `(handlerThread) -> clientDrop(handlerThread)`
 
     
 * Separation of concerns, all the database configuration is removed from code and kept in separate **config.properties** file.
@@ -32,7 +32,7 @@ Using the schema created from
 Documentation
 -------------
 
-Javadoc (only showing documentation for public methods) generated under the **doc/index.html**. There is bit more comments in the git repository as well which will be located under [github repository](https://github.com/truhlikfredy/assignments-y4-circumferenceMT) when it will be made public (till then it will show 404).
+Javadoc (only showing documentation for public methods) generated under the **doc/index.html**. There is bit more comments in the git repository as well which will be located under [github repository](https://github.com/truhlikfredy/assignments-y4-areaMT) when it will be made public (till then it will show 404).
 
 Metrics
 -------
