@@ -17,11 +17,13 @@ public class ServerHandler extends Thread {
 
   //multiply by 1000, round to whole number and then divide 1000 to get 3 decimal places.
   //Keep as floating number so it will not get truncated. Set 0 to disable rounding
-  private static final double          DECIMAL_PLACES = 1000;
-  private static final boolean         DEBUG          = false;
-  private              Socket          client         = null;
-  private              ServerListenner server         = null;
-  private              boolean         keepConnected  = true;
+  private static final double           DECIMAL_PLACES = 1000;
+  private static final boolean          DEBUG          = false;
+  private              Socket           client         = null;
+  private              ServerListenner  server         = null;
+  private              boolean          keepConnected  = true;
+  private              DataInputStream  consumer       = null; 
+  private              DataOutputStream producer       = null;
 
 
   public ServerHandler(ServerListenner server, Socket client) {
@@ -62,37 +64,56 @@ public class ServerHandler extends Thread {
   }
   
   
-  private void calculatePiRequest(DataInputStream consume, DataOutputStream produce) {
+  private void calculatePiRequests() {
    
     while (keepConnected) {
       try {
-        double input  = consume.readDouble();
+        double input  = consumer.readDouble();
         double result = calculatePi(input);
             
         server.messageFromThread(this, Messages.getString("HANDLER_RADIUS") + " " + input
             + " " + Messages.getString("HANDLER_RESULT") + result);
         
-        produce.writeDouble(result);
+        producer.writeDouble(result);
       }
       catch (IOException e) {
         server.messageFromThread(this, Messages.getString("ERROR_REQUEST") );
         if (DEBUG) e.printStackTrace();
         keepConnected = false;
       }
-    }
+    }      
+  }
+  
+  
+  private boolean validatedUser() {
+    try {
+      final Integer               account = consumer.readInt();
+      final Pair<Boolean, String> result  = server.logIn(account);
       
+      if (result.getFirst()) {
+        producer.writeUTF("Welcome "+result.getSecond());
+        producer.flush();
+      }
+           
+      return true;        
+    }
+    catch (IOException e) {
+      server.messageFromThread(this, Messages.getString("ERROR_VALIDATED") );
+      if (DEBUG) e.printStackTrace();
+      keepConnected = false;
+      return false;
+    } 
   }
   
 
   public void run() {
-    DataInputStream  consume; 
-    DataOutputStream produce;
-    
     try {
-      consume =  new DataInputStream(client.getInputStream());
-      produce =  new DataOutputStream(client.getOutputStream());
-
-      calculatePiRequest(consume, produce);
+      consumer =  new DataInputStream(client.getInputStream());
+      producer =  new DataOutputStream(client.getOutputStream());
+      
+      if (validatedUser()) {
+        calculatePiRequests();
+      }
 
       client.close();
     }
@@ -100,7 +121,6 @@ public class ServerHandler extends Thread {
       server.messageFromThread(this, Messages.getString("CLIENT_MSG_ERROR") );
       if (DEBUG) e.printStackTrace();
     }
-    
     
     server.clientDisconnected(client);
     server.messageFromThread(this, Messages.getString("CLIENT_DISCONNECTING") + getHostAddress() );

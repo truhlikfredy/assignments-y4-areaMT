@@ -1,6 +1,5 @@
 package antonkrug.eu;
 
-import java.security.interfaces.RSAKey;
 import java.sql.*;
 import java.util.Properties;
 

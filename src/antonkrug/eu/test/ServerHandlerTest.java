@@ -15,6 +15,13 @@ import org.junit.runners.Parameterized.Parameters;
 import antonkrug.eu.ServerHandler;
 import antonkrug.eu.ServerListenner;
 
+/**
+ * Parametrized test for the area calculator
+ * 
+ * @author Anton Krug
+ * @date 02.11.2016
+ * @version 1
+ */
 @RunWith(Parameterized.class)
 public class ServerHandlerTest {
   
@@ -25,6 +32,10 @@ public class ServerHandlerTest {
   private double          expected;
 
   
+  /**
+   * Feed tests with input and expected results 
+   * @return
+   */
   @Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] { { 0, 0 }, { -1, 3.141 }, { 1, 3.141 },
@@ -45,9 +56,14 @@ public class ServerHandlerTest {
   }
 
 
+  /**
+   * Tests themself thanks to parametrized testing become very simple.
+   * Test results only for 0.001 accuracy, that should be enough.
+   */
   @Test
   public void testCalculatePi() {
     assertEquals("Area for radius "+radius, expected, handler.calculatePi(radius), 0.001);   
   }
 
+  
 }
