@@ -3,7 +3,7 @@ Area multi-threaded server - CA 2
  by Anton Krug 20062210
 
 
-![screenshot](https://raw.githubusercontent.com/truhlikfredy/assignments/master/images/app.jpg?token=ABC5iVnzhQtKyOekSlVzQUpt-I9ftVo7ks5X9nw6wA%3D%3D)
+![screenshot](/images/app.jpg)
 
 Features
 --------
@@ -16,8 +16,11 @@ Features
 	is same as **lamda** expression below, but much cleaner:
     `(handlerThread) -> clientDrop(handlerThread)`
 
+* Multithreaded server and thread safe syncrhonization.
     
 * Separation of concerns, all the database configuration is removed from code and kept in separate **config.properties** file.
+
+
 
 * Externalized Strings, all texts which comunicate with enduser are exported into **messagess.properties** allows faster proof reading, or easy multilangual support.
 
@@ -27,7 +30,7 @@ Features
 Schema
 ------
 
-Using the schema created from 
+Using the schema created from **RegisteredApplicants.sql**
 
 Documentation
 -------------
