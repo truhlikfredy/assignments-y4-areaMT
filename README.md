@@ -35,7 +35,7 @@ Using the schema created from **RegisteredApplicants.sql**
 
 Classes
 -------
-![screenshot](/images/uml.jpg)
+![screenshot](/images/uml.png)
 
 
 Documentation
