@@ -3,7 +3,7 @@ Area multi-threaded server - CA 2
  by Anton Krug 20062210
 
 
-![screenshot](/images/app.jpg)
+![screenshot](/images/shot.jpg)
 
 Features
 --------
@@ -31,6 +31,12 @@ Schema
 ------
 
 Using the schema created from **RegisteredApplicants.sql**
+
+
+Classes
+-------
+![screenshot](/images/uml.jpg)
+
 
 Documentation
 -------------
